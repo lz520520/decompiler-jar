@@ -5,7 +5,11 @@ import zipfile
 import shutil
 import sys
 # !!!!!!! 需要修改成自己的路径
-java_decompiler_path = r"java-decompiler.jar"
+java_decompiler_path = r"fernflower.jar"
+jdk_path = r"D:\environ\Java\jdk-11.0.12\bin\java.exe"
+# program_params = r"-cp \"%s\" org.jetbrains.java.decompiler.main.decompiler.ConsoleDecompiler -dgs=true" % java_decompiler_path
+program_params = "-jar \"%s\" -dgs=true" % java_decompiler_path
+
 
 whitelist_name = "dec-whilelist.txt"
 
@@ -70,9 +74,9 @@ def get_all_class_files(filepath):
 if __name__ == "__main__":
     # 只要修改project_path即可
     project_path = "webapps"
-    jar_path = "jar1"
-    zip_path = "zip"
-    dst_path = "src\\main\\java"
+    jar_path = "decompiler\\jar1"
+    zip_path = "decompiler\\zip"
+    dst_path = "decompiler\\src\\main\\java"
     jar_files = get_jar_files(project_path)
     print(jar_files)
 
@@ -104,8 +108,8 @@ if __name__ == "__main__":
             if not os.path.exists(newdir):
                 os.makedirs(newdir, exist_ok=True)
             packname = os.path.join(newdir, os.path.basename(file))
-            cmd = "java -cp  \"%s\" org.jetbrains.java.decompiler.main.decompiler.ConsoleDecompiler -dgs=true \"%s\" \"%s\"" % \
-                  (java_decompiler_path, file, newdir)
+            cmd = "%s %s \"%s\" \"%s\"" % \
+                  (jdk_path, program_params, file, newdir)
             print(cmd)
             os.system(cmd)
 
@@ -126,27 +130,27 @@ if __name__ == "__main__":
     class_files = get_class_files(project_path)
 
 
-    class_allfiles = get_class_files(project_path)
+    class_allfiles = get_all_class_files(project_path)
     for file in class_allfiles:
         shutil.copy(file, jar_path)
+
+    project_path_tmp = project_path
+    if not jar_path.endswith("\\"):
+        project_path_tmp = project_path + "\\"    
 
 
     for file in class_files:
         try:
-            jar_path_tmp = jar_path
-            if not jar_path.endswith("\\"):
-                jar_path_tmp = jar_path + "\\"
 
-            newdir = os.path.join(dst_path, os.path.dirname(file).split(jar_path_tmp, 1)[1])
+            newdir = os.path.join(dst_path, os.path.dirname(file).split(project_path_tmp, 1)[1])
             if not os.path.exists(newdir):
                 os.makedirs(newdir, exist_ok=True)
-            cmd = "java -cp  \"%s\" org.jetbrains.java.decompiler.main.decompiler.ConsoleDecompiler -dgs=true \"%s\" \"%s\"" % \
-                  (java_decompiler_path, file, newdir)
-            print(cmd)
+            cmd = "%s %s \"%s\" \"%s\"" % \
+                  (jdk_path, program_params, file, newdir)
             os.system(cmd)
         except Exception as e:
             ferr = open("error.log", "a+")
-            ferr.write(file + "\r\n")
+            ferr.write("\r\n"+file + "\r\n")
             ferr.write(str(e))
             ferr.close()
             print(e)
